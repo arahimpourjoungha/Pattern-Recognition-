@@ -1,0 +1,30 @@
+clc
+clear all
+
+Data=xlsread('nn.xlsx');
+numOfData=size(Data,1);
+figure;
+plot(Data(:,5),Data(:,6));
+Data=Data(randperm(numOfData),:);
+Data=removeDC(Data);
+
+[V,E,D] =pca(Data(:,1:5)');
+%feature=3;
+input=Data(:,1:5)'V(1:feature,:)*Data(:,1:5)';
+Data=[ input' Data(:,6)];
+
+numOfTrainData=80;
+ numMFs = 2;
+ mfType = 'gbellmf';
+ epoch_n = 20;
+ in_fis = genfis1(Data(1:numOfTrainData,:),numMFs,mfType);
+out_fis = anfis(Data(1:numOfTrainData,:));
+a=evalfis(Data(69:numOfData,1:3),out_fis);
+b=Data(69:numOfData,4);
+MSE=mean((b-a).^2)
+MAE=mean(abs(b-a))
+
+figure;
+plot (Data(69:80,6),a,'*','Color','R');
+legend('Training Data','ANFIS Output');
+

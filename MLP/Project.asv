@@ -1,0 +1,58 @@
+clc
+clear all
+close all
+%%
+data=xlsread('nn.xlsx');
+figure;
+plot(data(:,5),data(:,6),'*');
+a=randperm(80);
+for j=1:80
+    data(j,:)=data(a(j),:);
+end
+input=data(:,1:5);
+p=input';
+inputw=data(:,1:5);
+pw=inputw';
+output=data(:,6);
+t=output';
+for i=1:5
+p(i,:)=p(i,:)/max(t(1,:));
+end
+for i=1:4
+pw(i,:)=pw(i,:)/max(t(1,:));
+end
+t(1,:)=t(1,:)/max(t(1,:));
+ net = feedforwardnet(20,'trainlm');
+ net = train(net,p(1:68),t(1:68));
+ view(net)
+ y = net(p);
+ %%%
+ netw = train(net,pw(1:68),t(1:68));
+ view(netw)
+ yw = net(pw);
+ %%%
+ [trainInd,valInd,testInd]=divideblock(80,0.7,0.15,0.15);
+net.trainParam.epochs=60;               %Maximum number of epochs to train
+net.trainParam.goal=1e-5;                    %Performance goal
+net.trainParam.lr=.05;                    %Learning rate
+net.trainParam.max_fail=10;                %Maximum validation failures
+net.trainParam.min_grad=1e-10;             %Minimum performance gradient
+net.trainParam.show=10;                    %Epochs between showing progress
+net.trainparam.mu_max=1e10;
+tv.P=p(:,69:80);
+tv.Pw=pw(:,69:80);
+tv.T=net(tv.P);
+tv.T=net(tv.P);
+target=t(:,69:80);
+% %%                   Calculate MSE
+e_test = target-tv.T;
+Caluclat_MSE = mse(e_test)
+%%                  Calculate  Absolute Error (AE) and Mean Absolute Error (MAE)
+Caluclat_AE=sum(abs(target-tv.T));
+Caluclat_MAE=mean(abs(target-tv.T));
+MAE = mae(target-tv.T)
+x=mae(abs((target-tv.T)./target))
+plot(tv.T,target,'*','Color','R');
+xlabel('nn output')
+ylabel('target')
+
